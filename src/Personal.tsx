@@ -4,9 +4,12 @@ import { api, PersonalActivity, ActivityType } from './api';
 const types: Record<ActivityType,string> = { CORRIDA:'Corrida', PEDALADA:'Pedalada', CAMINHADA:'Caminhada', MUSCULACAO:'Musculação' };
 export function PersonalPage({token}: {token:string}) {
   const [items,setItems]=useState<PersonalActivity[]>([]),[error,setError]=useState(''),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[kind,setKind]=useState<ActivityType>('CORRIDA');
-  const today=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
-  const load=()=>api.activities(token).then(setItems).catch(e=>setError(e.message)).finally(()=>setLoading(false));
-  useEffect(()=>{void load()},[token]);
+  const [today]=useState(()=>{const now=new Date();return new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,10)});
+  useEffect(()=>{
+    let active=true;
+    api.activities(token).then(data=>{if(active)setItems(data)}).catch(e=>{if(active)setError(e.message)}).finally(()=>{if(active)setLoading(false)});
+    return ()=>{active=false};
+  },[token]);
   async function submit(e:FormEvent<HTMLFormElement>){
     e.preventDefault();const form=e.currentTarget,fields=new FormData(form);setBusy(true);setError('');
     const base={tipo:kind,data:String(fields.get('data')),duracaoMinutos:Number(fields.get('duracao')),observacoes:String(fields.get('observacoes')||'')};
