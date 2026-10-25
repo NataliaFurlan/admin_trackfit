@@ -1,7 +1,10 @@
 import './environment-indicator.css';
 
 const apiUrl = import.meta.env.VITE_API_URL ?? '';
-const isTestEnvironment = apiUrl.includes('api-test-setta.varten.com.br');
+const isTestEnvironment = [
+  'api-test-setta.varten.com.br',
+  'api-test-trackfit.varten.com.br',
+].some(host => apiUrl.includes(host));
 
 if (isTestEnvironment) {
   const indicator = document.createElement('div');
