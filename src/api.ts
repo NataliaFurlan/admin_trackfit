@@ -138,7 +138,17 @@ export type WorkoutHistory = {
     } | null;
   }[];
 };
+export type ActivityType = 'CORRIDA'|'PEDALADA'|'CAMINHADA'|'MUSCULACAO';
+export type PersonalActivity = {
+  idAtividade:string; tipo:ActivityType; data:string; duracaoMinutos:number;
+  distanciaKm:number|null; nomeExercicio:string|null; cargaKg:number|null;
+  series:number|null; repeticoes:number|null; observacoes:string|null;
+};
+export type NewActivity = { tipo:ActivityType; data:string; duracaoMinutos:number; distanciaKm?:number; nomeExercicio?:string; cargaKg?:number; series?:number; repeticoes?:number; observacoes?:string };
 export const api = {
+  registerPersonal: (dto:{nome:string;email:string;senha:string}) => request<{mensagem:string}>('/auth/cadastro/pessoal',{method:'POST',body:JSON.stringify(dto)}),
+  activities: (token:string) => request<PersonalActivity[]>('/me/atividades',{},token),
+  createActivity: (token:string,dto:NewActivity) => request<PersonalActivity>('/me/atividades',{method:'POST',body:JSON.stringify(dto)},token),
   workoutCurrent: (token: string, id: string) =>
     request<WorkoutSheet>(`/treinador/alunos/${id}/ficha-atual`, {}, token),
   workoutHistory: (token: string, id: string) =>

@@ -1,3 +1,4 @@
+import { PersonalPage, RegisterPersonal } from './Personal';
 import { FormEvent, ReactNode, useCallback, useEffect, useState } from "react";
 import {
   Activity,
@@ -62,8 +63,9 @@ const statusLabel: Record<TrainerStatus, string> = {
 function Login({
   onLogin,
 }: {
-  onLogin: (role: "ADMIN" | "TREINADOR") => void;
+  onLogin: (role: "ADMIN" | "TREINADOR" | "ALUNO") => void;
 }) {
+  const [register,setRegister]=useState(false);
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [error, setError] = useState("");
@@ -74,7 +76,7 @@ function Login({
     setLoading(true);
     try {
       const result = await api.login(email, senha);
-      if (result.tipo !== "ADMIN" && result.tipo !== "TREINADOR")
+      if (result.tipo !== "ADMIN" && result.tipo !== "TREINADOR" && result.tipo !== "ALUNO")
         throw new ApiError(
           "Este perfil ainda não possui acesso ao portal.",
           403,
@@ -92,21 +94,21 @@ function Login({
     <main className="login-page">
       <section className="login-brand">
         <div className="wordmark">
-          <span>S/</span> Setta
+          <img src="/brand.svg" width="44" height="34" alt=""/> TrackFit
         </div>
         <p className="eyebrow">PAINEL DE OPERAÇÃO</p>
-        <h1>O controle do produto, em um só lugar.</h1>
-        <p>Acompanhe cadastros, decisões e a saúde do Setta com segurança.</p>
+        <h1>Treino conectado. Evolução contínua.</h1>
+        <p>Seu diário de atividades e o acompanhamento profissional em um só lugar.</p>
         <div className="login-foot">Um produto Varten · Acesso restrito</div>
       </section>
       <section className="login-panel">
-        <form className="login-card" onSubmit={submit}>
+        {register ? <RegisterPersonal back={()=>setRegister(false)}/> : <form className="login-card" onSubmit={submit}>
           <div className="login-icon">
             <ShieldCheck />
           </div>
-          <p className="eyebrow dark">PORTAL SETTA</p>
+          <p className="eyebrow dark">PORTAL TRACKFIT</p>
           <h2>Bem-vinda de volta.</h2>
-          <p className="muted">Use sua conta de treinador ou administrador para continuar.</p>
+          <p className="muted">Entre com sua conta pessoal, de treinador ou administrativa.</p>
           <label>
             E-mail
             <input
@@ -131,8 +133,8 @@ function Login({
           <button className="primary-button" disabled={loading}>
             {loading ? "Entrando…" : "Entrar no painel"} <span>→</span>
           </button>
-          <small>Sua sessão será encerrada ao fechar esta aba.</small>
-        </form>
+          <button type="button" className="back" onClick={()=>setRegister(true)}>Criar conta para uso pessoal →</button><small>Sua sessão será encerrada ao fechar esta aba.</small>
+        </form>}
       </section>
     </main>
   );
@@ -145,18 +147,18 @@ function Shell({
 }: {
   children: ReactNode;
   logout: () => void;
-  role: "ADMIN" | "TREINADOR";
+  role: "ADMIN" | "TREINADOR" | "ALUNO";
 }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="app-shell">
       <aside className={open ? "sidebar open" : "sidebar"}>
         <div className="wordmark">
-          <span>S/</span> Setta{" "}
-          <em>{role === "ADMIN" ? "Admin" : "Treinador"}</em>
+          <img src="/brand.svg" width="44" height="34" alt=""/> TrackFit{" "}
+          <em>{role === "ADMIN" ? "Admin" : role === "ALUNO" ? "Pessoal" : "Treinador"}</em>
         </div>
         <nav onClick={() => setOpen(false)}>
-          {role === "ADMIN" ? (
+          {role === "ALUNO" ? <NavLink to="/pessoal"><Activity/> Meu diário</NavLink> : role === "ADMIN" ? (
             <>
               <NavLink to="/admin">
                 <LayoutDashboard /> Visão geral
@@ -188,7 +190,7 @@ function Shell({
         <div className="sidebar-foot">
           <p>PERFIL</p>
           <strong>
-            <i /> {role === "ADMIN" ? "Administradora" : "Treinador aprovado"}
+            <i /> {role === "ADMIN" ? "Administradora" : role === "ALUNO" ? "Uso pessoal" : "Treinador aprovado"}
           </strong>
           <button onClick={logout}>
             <LogOut /> Encerrar sessão
@@ -201,7 +203,7 @@ function Shell({
             <Menu />
           </button>
           <div className="wordmark">
-            <span>S/</span> Setta
+            <img src="/brand.svg" width="44" height="34" alt=""/> TrackFit
           </div>
         </header>
         {open && (
@@ -276,7 +278,7 @@ function DashboardPage() {
         <Metric
           icon={<Users />}
           value={data?.totalUsuarios}
-          label="Usuários no Setta"
+          label="Usuários no TrackFit"
         />
       </section>
       <section className="panel">
@@ -397,7 +399,7 @@ function TrainersPage() {
       <PageHeader
         eyebrow="CADASTROS"
         title="Treinadores"
-        copy="Analise, aprove e controle os acessos ao Setta."
+        copy="Analise, aprove e controle os acessos ao TrackFit."
       />
       <div className="toolbar">
         <div className="search">
@@ -632,13 +634,13 @@ function LogsPage() {
       <PageHeader
         eyebrow="AUDITORIA"
         title="Registro de ações"
-        copy="Histórico das decisões administrativas realizadas no Setta."
+        copy="Histórico das decisões administrativas realizadas no TrackFit."
       />
       {error && <div className="error">{error}</div>}
       <section className="system-strip">
         <Activity />
         <div>
-          <strong>API Setta v{system?.version || "—"}</strong>
+          <strong>API TrackFit v{system?.version || "—"}</strong>
           <span>Ambiente: {system?.environment || "—"}</span>
         </div>
         <i>Em operação</i>
@@ -762,7 +764,7 @@ function TrainerStudents() {
         <PageHeader
           eyebrow="GESTÃO DA CONSULTORIA"
           title="Meus alunos"
-          copy="Somente alunos vinculados ao seu perfil aparecem aqui."
+          copy="Plano Inicial: até 5 alunos. Convites válidos pendentes também reservam uma vaga."
         />
         <button className="invite-button" onClick={() => setOpen(true)}>
           <Plus /> Convidar aluno
@@ -931,7 +933,7 @@ function InvitePage() {
     <main className="invite-page">
       <section className="invite-card">
         <div className="wordmark">
-          <span>S/</span> Setta
+          <img src="/brand.svg" width="44" height="34" alt=""/> TrackFit
         </div>
         <p className="eyebrow dark">CONVITE DE ALUNO</p>
         {error && !data ? (
@@ -943,13 +945,13 @@ function InvitePage() {
           <>
             <h1>Conta criada.</h1>
             <p>{message}</p>
-            <p>Agora você já pode entrar no aplicativo Setta com seu e-mail e sua nova senha.</p>
+            <p>Agora você já pode entrar no aplicativo TrackFit com seu e-mail e sua nova senha.</p>
           </>
         ) : data ? (
           <>
             <h1>Olá, {data.nome}.</h1>
             <p>
-              Você foi convidado para acompanhar seus treinos no Setta usando{" "}
+              Você foi convidado para acompanhar seus treinos no TrackFit usando{" "}
               <strong>{data.email}</strong>.
             </p>
             {isMobile && (
@@ -1084,8 +1086,8 @@ function TrainerComingSoon({ type }: { type: "fichas" | "solicitações" }) {
 
 export default function App() {
   const initialRole = sessionStorage.getItem(ROLE_KEY) as
-    "ADMIN" | "TREINADOR" | null;
-  const [role, setRole] = useState<"ADMIN" | "TREINADOR" | null>(
+    "ADMIN" | "TREINADOR" | "ALUNO" | null;
+  const [role, setRole] = useState<"ADMIN" | "TREINADOR" | "ALUNO" | null>(
     getToken() ? initialRole : null,
   );
   function logout() {
@@ -1100,10 +1102,11 @@ export default function App() {
       </Routes>
     );
   if (!role) return <Login onLogin={setRole} />;
-  const home = role === "ADMIN" ? "/admin" : "/treinador";
+  const home = role === "ADMIN" ? "/admin" : role === "ALUNO" ? "/pessoal" : "/treinador";
   return (
     <Shell logout={logout} role={role}>
       <Routes>
+        <Route path="/pessoal" element={role==="ALUNO"?<PersonalPage token={getToken()!}/>:<Navigate to={home} replace/>}/>
         <Route
           path="/admin"
           element={

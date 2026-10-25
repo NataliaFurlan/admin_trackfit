@@ -1,4 +1,4 @@
-# Setta Portal
+# TrackFit Portal
 
 Portal React/TypeScript para administração e operação dos treinadores.
 
@@ -34,3 +34,9 @@ Fluxo `dev → prod`, plano, validação e publicação em `docs/release.md`.
 ./scripts/deploy-prod.sh --check
 ./scripts/deploy-prod.sh --publish
 ```
+
+## Diário pessoal TrackFit
+
+O portal admite o perfil ALUNO, incluindo cadastro independente por e-mail/senha. O diário registra manualmente corrida, pedalada, caminhada e musculação, sem GPS. Exige a API TrackFit e a migração 008_personal_activities.sql antes da publicação do portal.
+
+Os fluxos existentes de treinador, fichas, histórico e convites foram preservados a partir da dev. A URL da API e o link setta:// continuam compatíveis com o aplicativo atual. Não há plano pago ou checkout implementado. A implantação e os testes contra o MySQL real continuam pendentes.
